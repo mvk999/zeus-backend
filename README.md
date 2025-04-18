@@ -6,15 +6,11 @@
 
 Ainda está **em desenvolvimento**, e algumas funcionalidades podem estar em construção ou testes. Este README será atualizado à medida que o projeto avança.
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias Utilizadas (Até o momento)
 
 - **Node.js**: Ambiente de execução JavaScript no servidor
 - **Express.js**: Framework minimalista para criação de APIs
 - **MySQL**: Banco de dados relacional
-- **bcryptjs**: Biblioteca para criptografia de senhas
-- **jsonwebtoken (JWT)**: Para autenticação de usuários
-- **dotenv**: Para gerenciamento de variáveis de ambiente
-- **CORS**: Middleware para permitir requisições de diferentes origens
 
 ## 🚀 Como rodar o projeto
 Antes de qualquer coisa certifique se o Node e o MYsql estão instalados,então:
