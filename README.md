@@ -30,8 +30,8 @@ Inicialmente isso tudo esta rodando em localhost, isso será analisado durante o
 Clone este repositório em seu diretório local:
 
 ```bash
-git clone https://github.com/mvk999/rhaegal.git
-cd rhaegal
+git clone https://github.com/mvk999/zeus-backend.git
+cd zeus-backend
 ```
 🚧 Status do Projeto
 O projeto está em desenvolvimento.Sempre que alguma alteração for realizada será feito um commit para documentação
