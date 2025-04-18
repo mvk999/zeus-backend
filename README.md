@@ -13,7 +13,7 @@ Ainda está **em desenvolvimento**, e algumas funcionalidades podem estar em con
 - **MySQL**: Banco de dados relacional
 
 ## 🚀 Como rodar o projeto
-Antes de qualquer coisa certifique se o Node e o MYsql estão instalados,então:
+Antes de qualquer coisa certifique se o Node e o MySQL estão instalados,então:
 ```bash
 npm install
 ```
@@ -32,6 +32,6 @@ Clone este repositório em seu diretório local:
 ```bash
 git clone https://github.com/mvk999/rhaegal.git
 cd rhaegal
-
+```
 🚧 Status do Projeto
 O projeto está em desenvolvimento.Sempre que alguma alteração for realizada será feito um commit para documentação
