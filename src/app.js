@@ -1,13 +1,8 @@
 const express = require('express');
-const cors = require('cors');
 const app = express();
-require('dotenv').config();
+const usuarioRoutes = require('./routes/usuarioRoutes');
 
-// Middleware
-app.use(cors());
 app.use(express.json());
-
-// Conectar ao banco
-require('./config/dbconnect');
+app.use('/api', usuarioRoutes);
 
 module.exports = app;
