@@ -1,4 +1,5 @@
 // teste inicial para fazer o DAO
+const bcrypt = require('bcryptjs');
 const db = require('../config/dbconnect.js');
 const usuario = require('../models/usuario.js');
 
@@ -10,24 +11,18 @@ class DAOusuario {
       INSERT INTO usuario (nome_user, email_user, senha_user, tipo_user)
       VALUES (?, ?, ?, ?)
     `;
-    const values = [
-      usuario.nome_user,
-      usuario.email_user,
-      usuario.senha_user,
-      usuario.tipo_user
-    ];
-    db.query(sql, values, callback);
-  }
-
-  // CONSULTAR todos os usuários
-  static listarTodos(callback) {
-    const sql = 'SELECT * FROM usuario';
-    db.query(sql, (err, results) => {
-      if (err) return callback(err, null);
-      const usuarios = results.map(u =>
-        new usuario(u.id_user, u.nome_user, u.email_user, u.senha_user, u.tipo_user)
-      );
-      callback(null, usuarios);
+  
+    bcrypt.hash(usuario.senha_user, 10, (err, hash) => {
+      if (err) return callback(err);
+  
+      const values = [
+        usuario.nome_user,
+        usuario.email_user,
+        hash, // ← senha criptografada
+        usuario.tipo_user
+      ];
+  
+      db.query(sql, values, callback);
     });
   }
 
