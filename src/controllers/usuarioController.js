@@ -1,6 +1,8 @@
 const DAOusuario = require('../dao/DAOusuario');
+const bcrypt = require('bcryptjs');
 
 class UsuarioController {
+  // LISTAR todos os usuários
   static listar(req, res) {
     DAOusuario.listarTodos((err, usuarios) => {
       if (err) {
@@ -10,6 +12,7 @@ class UsuarioController {
     });
   }
 
+  // BUSCAR um usuário por ID
   static buscarPorId(req, res) {
     const id = req.params.id;
     DAOusuario.buscarPorId(id, (err, usuario) => {
@@ -23,16 +26,45 @@ class UsuarioController {
     });
   }
 
+  // INSERIR um novo usuário
   static inserir(req, res) {
     const usuario = req.body;
-    DAOusuario.inserir(usuario, (err, resultado) => {
+    console.log("Dados recebidos no body:", usuario);
+
+    // Validação básica
+    if (!usuario.email_user || !usuario.senha_user) {
+      return res.status(400).json({ erro: 'Email e senha são obrigatórios' });
+    }
+
+    // Validação de e-mail
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(usuario.email_user);
+    if (!emailValido) {
+      return res.status(400).json({ erro: 'Email inválido' });
+    }
+
+    // Validação de senha
+    if (usuario.senha_user.length < 6) {
+      return res.status(400).json({ erro: 'A senha deve ter no mínimo 6 caracteres' });
+    }
+
+    // Criptografar a senha
+    bcrypt.hash(usuario.senha_user, 10, (err, hash) => {
       if (err) {
-        return res.status(500).json({ erro: 'Erro ao inserir usuário' });
+        return res.status(500).json({ erro: 'Erro ao criptografar a senha' });
       }
-      res.status(201).json({ mensagem: 'Usuário criado com sucesso', id: resultado.insertId });
+
+      usuario.senha_user = hash;
+
+      DAOusuario.inserir(usuario, (err, resultado) => {
+        if (err) {
+          return res.status(500).json({ erro: 'Erro ao inserir usuário' });
+        }
+        res.status(201).json({ mensagem: 'Usuário inserido com sucesso', resultado });
+      });
     });
   }
 
+  // ATUALIZAR usuário
   static atualizar(req, res) {
     const id = req.params.id;
     const usuario = { ...req.body, id_user: id };
@@ -45,21 +77,26 @@ class UsuarioController {
     });
   }
 
-static deletar(req, res) {
-  const id = req.params.id;
+  // DELETAR usuário
+  static deletar(req, res) {
+    const id = req.params.id;
 
-  // Se o corpo da requisição não confirmar
-  if (!req.body.confirmado) {
-    return res.status(400).json({
-      erro: 'Exclusão não confirmada. Envie { "confirmado": true } no body.'
+    if (!req.body.confirmado) {
+      return res.status(400).json({
+        erro: 'Exclusão não confirmada. Envie { "confirmado": true } no corpo da requisição.'
+      });
+    }
+
+    DAOusuario.deletar(id, (err, resultado) => {
+      if (err) {
+        return res.status(500).json({ erro: 'Erro ao deletar usuário' });
+      }
+      if (!resultado || resultado.affectedRows === 0) {
+        return res.status(404).json({ erro: 'Usuário não encontrado' });
+      }
+      res.status(200).json({ mensagem: 'Usuário excluído com sucesso' });
     });
   }
+}
 
-  DAOorcamento.deletar(id, (err, resultado) => {
-    if (err) return res.status(500).json({ erro: 'Erro ao deletar orçamento' });
-    res.status(204).send();
-  });
-  
-}
-}
-  module.exports = UsuarioController;
+module.exports = UsuarioController;
