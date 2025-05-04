@@ -64,6 +64,57 @@ class UsuarioController {
     });
   }
 
+  static login(req, res) {
+    const jwt = require('jsonwebtoken');
+    const email_user = req.body.email_user;
+    const senhaDigitada = req.body.senha_user;
+  
+    if (!email_user || !senhaDigitada) {
+      return res.status(400).json({ erro: 'Email e senha são obrigatórios.' });
+    }
+  
+    DAOusuario.buscarPorEmail(email_user, (err, usuario) => {
+      if (err) {
+        return res.status(500).json({ erro: 'Erro interno ao buscar usuário.' });
+      }
+  
+      if (!usuario) {
+        return res.status(404).json({ erro: 'Usuário não encontrado.' });
+      }
+  
+      // Verifica a senha
+      const bcrypt = require('bcryptjs');
+      bcrypt.compare(senhaDigitada, usuario.senha_user, (err, match) => {
+        if (err) {
+          return res.status(500).json({ erro: 'Erro ao comparar senhas.' });
+        }
+  
+        if (!match) {
+          return res.status(401).json({ erro: 'Senha incorreta.' });
+        }
+  
+        // 🔐 Geração do token após validação bem-sucedida
+        const token = jwt.sign(
+          { id: usuario.id_user, tipo: usuario.tipo_user },
+          process.env.JWT_SECRET || 'segredoSuperSeguro',
+          { expiresIn: '1h' }
+        );
+  
+        res.status(200).json({
+          mensagem: 'Login realizado com sucesso!',
+          token: token,
+          usuario: {
+            id_user: usuario.id_user,
+            nome_user: usuario.nome_user,
+            email_user: usuario.email_user,
+            tipo_user: usuario.tipo_user
+          }
+        });
+      });
+    });
+  }
+  
+
   // ATUALIZAR usuário
   static atualizar(req, res) {
     const id = req.params.id;

@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const ClienteController = require('../controllers/clienteController');
+const autenticar = require('../middlewares/authMiddleware'); // 👈 Certo
 
-router.get('/cliente', ClienteController.listar);
-router.get('/cliente/:id', ClienteController.buscarPorId);
-router.post('/cliente', ClienteController.inserir);
-router.put('/cliente/:id', ClienteController.atualizar);
-router.delete('/cliente/:id', ClienteController.deletar);
+router.get('/cliente', autenticar, ClienteController.listar); // 👈 Protegido
+router.get('/cliente/:id', autenticar, ClienteController.buscarPorId);
+router.post('/cliente', autenticar, ClienteController.inserir);
+router.put('/cliente/:id', autenticar, ClienteController.atualizar);
+router.delete('/cliente/:id', autenticar, ClienteController.deletar);
 
 module.exports = router;

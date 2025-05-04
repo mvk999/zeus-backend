@@ -51,6 +51,24 @@ class DAOusuario {
     const sql = 'DELETE FROM usuario WHERE id_user = ?';
     db.query(sql, [id], callback);
   }
-}
 
+static buscarPorEmail(email, callback) {
+  const sql = 'SELECT * FROM usuario WHERE email_user = ?';
+  db.query(sql, [email], (err, results) => {
+    if (err) return callback(err, null);
+    if (results.length === 0) return callback(null, null);
+
+    const u = results[0];
+    const usuario = {
+      id_user: u.id_user,
+      nome_user: u.nome_user,
+      email_user: u.email_user,
+      senha_user: u.senha_user,
+      tipo_user: u.tipo_user
+    };
+
+    callback(null, usuario);
+  });
+}
+}
 module.exports = DAOusuario;

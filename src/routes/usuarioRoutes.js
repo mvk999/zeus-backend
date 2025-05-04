@@ -1,11 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const UsuarioController = require('../controllers/usuarioController');
+const autenticarToken = require('../middlewares/auth'); // 👈 importado aqui
 
-router.get('/usuario', UsuarioController.listar);          // Listar todos
-router.get('/usuario/:id', UsuarioController.buscarPorId); // Buscar um por ID
-router.post('/usuario', UsuarioController.inserir);        // Criar novo
-router.put('/usuario/:id', UsuarioController.atualizar);   // Atualizar
-router.delete('/usuario/:id', UsuarioController.deletar);  // Deletar
+// 🔓 Rota pública
+router.post('/usuario/login', UsuarioController.login);
+
+// 🔐 Rotas protegidas
+router.get('/usuario', autenticarToken, UsuarioController.listar);
+router.get('/usuario/:id', autenticarToken, UsuarioController.buscarPorId);
+router.post('/usuario', autenticarToken, UsuarioController.inserir);
+router.put('/usuario/:id', autenticarToken, UsuarioController.atualizar);
+router.delete('/usuario/:id', autenticarToken, UsuarioController.deletar);
 
 module.exports = router;
