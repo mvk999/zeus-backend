@@ -70,5 +70,24 @@ static buscarPorEmail(email, callback) {
     callback(null, usuario);
   });
 }
+
+// Buscar usuário por email
+  static buscarPorEmail(email, callback) {
+  const sql = 'SELECT * FROM usuario WHERE email_user = ?';
+  db.query(sql, [email], (err, results) => {
+    if (err) return callback(err, null);
+    if (results.length === 0) return callback(null, null);
+    callback(null, results[0]);
+  });
+}
+
+// Salvar código na tabela de recuperação
+static salvarCodigoRecuperacao(email, codigo, expiraEm, callback) {
+  const sql = `
+    INSERT INTO recuperacao_senha (email_user, codigo_recuperacao, utilizado, expira_em)
+    VALUES (?, ?, 0, ?)
+  `;
+  db.query(sql, [email, codigo, expiraEm], callback);
+}
 }
 module.exports = DAOusuario;

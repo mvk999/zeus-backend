@@ -45,6 +45,17 @@ class OrcamentoController {
     });
   }
 
+static listarDoCliente(req, res) {
+  const idCliente = req.user.id;
+
+  DAOorcamento.listarPorCliente(idCliente, (err, orcamentos) => {
+    if (err) {
+      return res.status(500).json({ erro: 'Erro ao listar orçamentos do cliente' });
+    }
+    res.status(200).json(orcamentos);
+  });
+}
+
   static deletar(req, res) {
     const id = req.params.id;
     DAOorcamento.deletar(id, (err, resultado) => {

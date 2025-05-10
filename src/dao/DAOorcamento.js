@@ -69,6 +69,11 @@ class DAOorcamento {
     db.query(sql, values, callback);
   }
 
+static listarPorCliente(id_cli, callback) {
+  const sql = 'SELECT * FROM orcamento WHERE id_cli = ?';
+  db.query(sql, [id_cli], callback);
+}
+
   static deletar(id, callback) {
     const sql = 'DELETE FROM orcamento WHERE id_orcamento = ?';
     db.query(sql, [id], callback);

@@ -1,4 +1,5 @@
 const DAOusuario = require('../dao/DAOusuario');
+const transporter = require('../config/mailer');
 const bcrypt = require('bcryptjs');
 
 class UsuarioController {
@@ -57,7 +58,8 @@ class UsuarioController {
 
       DAOusuario.inserir(usuario, (err, resultado) => {
         if (err) {
-          return res.status(500).json({ erro: 'Erro ao inserir usuário' });
+          console.error("Erro no DAOusuario:", err); // Mostra no terminal
+          return res.status(500).json({ erro: 'Erro ao inserir usuário', detalhe: err.message });
         }
         res.status(201).json({ mensagem: 'Usuário inserido com sucesso', resultado });
       });
@@ -113,7 +115,48 @@ class UsuarioController {
       });
     });
   }
-  
+static esquecisenha(req, res) {
+  const email = req.body.email_user;
+
+  if (!email) {
+    return res.status(400).json({ erro: 'Email é obrigatório.' });
+  }
+
+  DAOusuario.buscarPorEmail(email, (err, usuario) => {
+    if (err) return res.status(500).json({ erro: 'Erro ao buscar usuário.' });
+
+    if (!usuario) {
+      return res.status(404).json({ erro: 'Email não cadastrado.' });
+    }
+
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    const dataLocal = new Date(Date.now() + 15 * 60 * 1000);
+    dataLocal.setHours(dataLocal.getHours() - 3); // ajuste para ficar igual horario de brasilia
+    const expiraEm = dataLocal.toISOString().slice(0, 19).replace('T', ' ');
+
+    DAOusuario.salvarCodigoRecuperacao(email, codigo, expiraEm, (err, result) => {
+      if (err) {
+        return res.status(500).json({ erro: 'Erro ao gerar código de recuperação.', detalhe: err.message });
+      }
+
+    // agora realmente envia o cod para um email valido (o email precisa existir para a conexao com o google)
+    transporter.sendMail({
+     from: '"Suporte Rhaegal" <no-reply@rhaegal.suporte.com>', // pode ser qualquer nome e-mail fake
+     to: email,
+     subject: 'Recuperação de Senha - Projeto Rhaegal',
+       text: `Seu código de recuperação é: ${codigo}. Ele expira em 15 minutos.`
+}, (err, info) => {
+  if (err) {
+    console.error('Erro ao enviar email:', err);
+    return res.status(500).json({ erro: 'Erro ao enviar o código por email.' });
+  }
+
+  console.log('✉️  Email enviado com sucesso:', info.response);
+  return res.status(200).json({ mensagem: 'Código de recuperação enviado para o email.' });
+});
+    });
+  });
+}
 
   // ATUALIZAR usuário
   static atualizar(req, res) {
