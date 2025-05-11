@@ -81,6 +81,24 @@ static buscarPorEmail(email, callback) {
   });
 }
 
+static verificarCodigoRecuperacao(email, codigo, callback) {
+  const sql = `
+    SELECT * FROM recuperacao_senha
+    WHERE email_user = ? AND codigo_recuperacao = ? AND utilizado = 0
+    ORDER BY id DESC LIMIT 1
+  `;
+  db.query(sql, [email, codigo], callback);
+}
+
+static marcarCodigoComoUsado(email, codigo, callback) {
+  const sql = `
+    UPDATE recuperacao_senha
+    SET utilizado = 1
+    WHERE email_user = ? AND codigo_recuperacao = ?
+  `;
+  db.query(sql, [email, codigo], callback);
+}
+
 // Salvar código na tabela de recuperação
 static salvarCodigoRecuperacao(email, codigo, expiraEm, callback) {
   const sql = `

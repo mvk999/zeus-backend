@@ -1,4 +1,5 @@
 const DAOusuario = require('../dao/DAOusuario');
+const db = require('../config/dbconnect');
 const transporter = require('../config/mailer');
 const bcrypt = require('bcryptjs');
 
@@ -95,11 +96,11 @@ class UsuarioController {
           return res.status(401).json({ erro: 'Senha incorreta.' });
         }
   
-        // 🔐 Geração do token após validação bem-sucedida
+        // Geração do token após validação bem-sucedida
         const token = jwt.sign(
           { id: usuario.id_user, tipo: usuario.tipo_user },
           process.env.JWT_SECRET || 'segredoSuperSeguro',
-          { expiresIn: '1h' }
+          { expiresIn: '10h' }
         );
   
         res.status(200).json({
@@ -144,7 +145,7 @@ static esquecisenha(req, res) {
      from: '"Suporte Rhaegal" <no-reply@rhaegal.suporte.com>', // pode ser qualquer nome e-mail fake
      to: email,
      subject: 'Recuperação de Senha - Projeto Rhaegal',
-       text: `Seu código de recuperação é: ${codigo}. Ele expira em 15 minutos.`
+       text: `Seu código de recuperação é: ${codigo}. Ele expira em 15 minutos.` //tem no BD tmb o tempo que ele expira,para fazer o calc
 }, (err, info) => {
   if (err) {
     console.error('Erro ao enviar email:', err);
@@ -154,6 +155,52 @@ static esquecisenha(req, res) {
   console.log('✉️  Email enviado com sucesso:', info.response);
   return res.status(200).json({ mensagem: 'Código de recuperação enviado para o email.' });
 });
+    });
+  });
+}
+
+static redefinirSenha(req, res) {
+  const { email_user, codigo, nova_senha } = req.body;
+
+  if (!email_user || !codigo || !nova_senha) {
+    return res.status(400).json({ erro: 'Email, código e nova senha são obrigatórios.' });
+  }
+
+  DAOusuario.verificarCodigoRecuperacao(email_user, codigo, (err, resultado) => {
+    if (err) return res.status(500).json({ erro: 'Erro ao verificar código.', detalhe: err.message });
+
+    if (!resultado || resultado.length === 0) {
+      return res.status(400).json({ erro: 'Código inválido ou já utilizado.' });
+    }
+
+    const registro = resultado[0];
+    const agora = new Date();
+    const expira = new Date(registro.expira_em);
+
+    if (agora > expira) {
+      return res.status(400).json({ erro: 'Código expirado. Solicite um novo.' });
+    }
+
+    // Criptografar nova senha
+    bcrypt.hash(nova_senha, 10, (err, hash) => {
+      if (err) return res.status(500).json({ erro: 'Erro ao criptografar nova senha.' });
+
+      const novoUsuario = {
+        id_user: registro.id_user, // ou buscar pelo email
+        email_user,
+        senha_user: hash
+      };
+
+      // Atualiza a senha
+      const sql = 'UPDATE usuario SET senha_user = ? WHERE email_user = ?';
+      db.query(sql, [hash, email_user], (err, result) => {
+        if (err) return res.status(500).json({ erro: 'Erro ao atualizar a senha.' });
+
+        // Marca o código como usado
+        DAOusuario.marcarCodigoComoUsado(email_user, codigo, () => {
+          return res.status(200).json({ mensagem: 'Senha redefinida com sucesso!' });
+        });
+      });
     });
   });
 }
