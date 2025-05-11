@@ -23,15 +23,64 @@ class MembroController {
     });
   }
 
-  static inserir(req, res) {
-    const membro = req.body;
-    DAOmembro.inserir(membro, (err, resultado) => {
-      if (err) {
-        return res.status(500).json({ erro: 'Erro ao inserir membro' });
-      }
-      res.status(201).json({ mensagem: 'Membro inserido com sucesso', resultado });
-    });
+static inserir(req, res) {
+  const membro = req.body;
+
+  const {
+    nome_membro,
+    cargo_membro,
+    email_inst_membro,
+    data_nascimento_membro,
+    data_ingress_membro,
+    foto
+  } = membro;
+
+  // Validações obrigatórias
+  if (!nome_membro || !nome_membro.trim()) {
+    return res.status(400).json({ erro: 'Nome do membro é obrigatório.' });
   }
+
+  if (!cargo_membro || !cargo_membro.trim()) {
+    return res.status(400).json({ erro: 'Cargo do membro é obrigatório.' });
+  }
+
+  if (!email_inst_membro || !email_inst_membro.endsWith('@compjunior.com')) {
+    return res.status(400).json({ erro: 'O e-mail deve ser institucional (@compjunior.com.br).' });
+  }
+
+  const hoje = new Date();
+  const nascimento = new Date(data_nascimento_membro);
+  const ingresso = new Date(data_ingress_membro);
+
+  if (nascimento >= hoje) {
+    return res.status(400).json({ erro: 'A data de nascimento deve ser anterior à data atual.' });
+  }
+
+  if (ingresso >= hoje) {
+    return res.status(400).json({ erro: 'A data de ingresso deve ser anterior à data atual.' });
+  }
+
+  // Validação de foto (simulada como string com nome ou URL)
+  if (foto) {
+    const extensao = foto.toLowerCase();
+    const formatosAceitos = ['.jpg', '.jpeg', '.png'];
+    const valido = formatosAceitos.some(ext => extensao.endsWith(ext));
+
+    if (!valido) {
+      return res.status(400).json({ erro: 'A foto deve ser JPG, JPEG ou PNG.' });
+    }
+    // Simulação de tamanho omitida por enquanto (base64 ou upload real seria necessário)
+  }
+
+  // Se todas as validações passaram, insere no banco
+  DAOmembro.inserir(membro, (err, resultado) => {
+    if (err) {
+      return res.status(500).json({ erro: 'Erro ao inserir membro', detalhe: err.message });
+    }
+    res.status(201).json({ mensagem: 'Membro inserido com sucesso', resultado });
+  });
+}
+
 
   static atualizar(req, res) {
     const id = req.params.id;

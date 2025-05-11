@@ -1,5 +1,5 @@
 class membro{
-    constructor(id_membro,nome_membro,data_nascimento_membro,email_inst_membro,cargo_membro,telefone_membro,genero_membro,data_ingress_membro,id_user)
+    constructor(id_membro,nome_membro,data_nascimento_membro,email_inst_membro,cargo_membro,telefone_membro,genero_membro,foto_membro,data_ingress_membro,id_user)
 {
     this.id_membro = id_membro;
     this.nome_membro = nome_membro;
@@ -8,6 +8,7 @@ class membro{
     this.cargo_membro = cargo_membro;
     this.telefone_membro = telefone_membro;
     this.genero_membro = genero_membro;
+    this.foto_membro = foto_membro;
     this.data_ingress_membro = data_ingress_membro;
     this.id_user = id_user;
 }

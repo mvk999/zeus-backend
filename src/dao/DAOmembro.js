@@ -1,12 +1,21 @@
 const db = require('../config/dbconnect.js');
-const Membro = require('../models/membro.js');  // Corrigido para letra maiúscula
+const Membro = require('../models/membro.js');  
 
 class DAOmembro {
   // INSERIR um novo membro
   static inserir(membro, callback) {
     const sql = `
-      INSERT INTO membro (nome_membro, email_inst_membro, data_nascimento_membro, cargo_membro, telefone_membro, genero_membro, data_ingress_membro, id_user)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO membro (
+        nome_membro,
+        email_inst_membro,
+        data_nascimento_membro,
+        cargo_membro,
+        telefone_membro,
+        genero_membro,
+        foto_membro,
+        data_ingress_membro,
+        id_user
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
       membro.nome_membro,
@@ -15,6 +24,7 @@ class DAOmembro {
       membro.cargo_membro,
       membro.telefone_membro,
       membro.genero_membro,
+      membro.foto_membro,
       membro.data_ingress_membro,
       membro.id_user
     ];
@@ -27,7 +37,18 @@ class DAOmembro {
     db.query(sql, (err, results) => {
       if (err) return callback(err, null);
       const membros = results.map(u =>
-        new Membro(u.id_membro, u.nome_membro, u.data_nascimento_membro, u.email_inst_membro, u.cargo_membro, u.telefone_membro, u.genero_membro, u.data_ingress_membro, u.id_user)
+        new Membro(
+          u.id_membro,
+          u.nome_membro,
+          u.data_nascimento_membro,
+          u.email_inst_membro,
+          u.cargo_membro,
+          u.telefone_membro,
+          u.genero_membro,
+          u.foto_membro,              
+          u.data_ingress_membro,
+          u.id_user
+        )
       );
       callback(null, membros);
     });
@@ -41,7 +62,18 @@ class DAOmembro {
       if (results.length === 0) return callback(null, null);
 
       const u = results[0];
-      const membro = new Membro(u.id_membro, u.nome_membro, u.data_nascimento_membro, u.email_inst_membro, u.cargo_membro, u.telefone_membro, u.genero_membro, u.data_ingress_membro, u.id_user);
+      const membro = new Membro(
+        u.id_membro,
+        u.nome_membro,
+        u.data_nascimento_membro,
+        u.email_inst_membro,
+        u.cargo_membro,
+        u.telefone_membro,
+        u.genero_membro,
+        u.foto_membro,              
+        u.data_ingress_membro,
+        u.id_user
+      );
       callback(null, membro);
     });
   }
@@ -56,6 +88,7 @@ class DAOmembro {
         cargo_membro = ?,
         telefone_membro = ?,
         genero_membro = ?,
+        foto_membro = ?,              -- ADICIONADO AQUI
         data_ingress_membro = ?,
         id_user = ?
       WHERE id_membro = ?
@@ -67,9 +100,10 @@ class DAOmembro {
       membro.cargo_membro,
       membro.telefone_membro,
       membro.genero_membro,
+      membro.foto_membro,             
       membro.data_ingress_membro,
       membro.id_user,
-      membro.id_membro  // Certifique-se de passar o ID do membro para o UPDATE
+      membro.id_membro
     ];
     db.query(sql, values, callback);
   }
