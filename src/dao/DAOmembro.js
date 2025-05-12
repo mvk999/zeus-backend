@@ -54,6 +54,34 @@ class DAOmembro {
     });
   }
 
+//consulta por nome especifico
+  static buscarPorNome(nome, callback) {
+    const sql = 'SELECT * FROM membro WHERE nome_membro LIKE ?';
+    const valor = `%${nome}%`;
+    db.query(sql, [valor], (err, results) => {
+      if (err) return callback(err, null);
+  
+      const membros = results.map(u =>
+        new Membro(
+          u.id_membro,
+          u.nome_membro,
+          u.data_nascimento_membro,
+          u.email_inst_membro,
+          u.cargo_membro,
+          u.telefone_membro,
+          u.genero_membro,
+          u.foto_membro,
+          u.data_ingress_membro,
+          u.id_user
+        )
+      );
+  
+      callback(null, membros);
+    });
+  }
+  
+
+
   // CONSULTAR por ID
   static buscarPorId(id, callback) {
     const sql = 'SELECT * FROM membro WHERE id_membro = ?';

@@ -2,13 +2,32 @@ const DAOmembro = require('../dao/DAOmembro');
 
 class MembroController {
   static listar(req, res) {
-    DAOmembro.listarTodos((err, membros) => {
-      if (err) {
-        return res.status(500).json({ erro: 'Erro ao listar membros' });
-      }
-      res.json(membros);
-    });
+    const nomeFiltro = req.query.nome;
+  
+    if (nomeFiltro) {
+      DAOmembro.buscarPorNome(nomeFiltro, (err, membros) => {
+        if (err) {
+          return res.status(500).json({ erro: 'Erro ao buscar membros por nome' });
+        }
+  
+        if (membros.length === 0) {
+          return res.status(404).json({ mensagem: `Nenhum membro encontrado com o nome ${nomeFiltro}.` });
+        }
+  
+        return res.status(200).json(membros);
+      });
+    } else {
+      DAOmembro.listarTodos((err, membros) => {
+        if (err) {
+          return res.status(500).json({ erro: 'Erro ao listar membros' });
+        }
+  
+        res.status(200).json(membros);
+      });
+    }
   }
+  
+  
 
   static buscarPorId(req, res) {
     const id = req.params.id;
