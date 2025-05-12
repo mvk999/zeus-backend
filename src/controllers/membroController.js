@@ -27,7 +27,6 @@ class MembroController {
     }
   }
   
-  
 
   static buscarPorId(req, res) {
     const id = req.params.id;
@@ -101,17 +100,62 @@ static inserir(req, res) {
 }
 
 
-  static atualizar(req, res) {
-    const id = req.params.id;
-    const membro = req.body;
-    membro.id_membro = id; // importante para passar o ID certo pro DAO
-    DAOmembro.atualizar(membro, (err, resultado) => {
-      if (err) {
-        return res.status(500).json({ erro: 'Erro ao atualizar membro' });
-      }
-      res.json({ mensagem: 'Membro atualizado com sucesso', resultado });
-    });
+static atualizar(req, res) {
+  const id = req.params.id;
+  const membro = req.body;
+  membro.id_membro = id;
+
+  const {
+    nome_membro,
+    cargo_membro,
+    email_inst_membro,
+    data_nascimento_membro,
+    data_ingress_membro,
+    foto_membro
+  } = membro;
+
+  if (!nome_membro || !nome_membro.trim()) {
+    return res.status(400).json({ erro: 'Nome do membro é obrigatório.' });
   }
+
+  if (!cargo_membro || !cargo_membro.trim()) {
+    return res.status(400).json({ erro: 'Cargo do membro é obrigatório.' });
+  }
+
+  if (!email_inst_membro || !email_inst_membro.endsWith('@compjunior.com')) {
+    return res.status(400).json({ erro: 'O e-mail deve ser institucional (@compjunior.com).' });
+  }
+
+  const hoje = new Date();
+  const nascimento = new Date(data_nascimento_membro);
+  const ingresso = new Date(data_ingress_membro);
+
+  if (nascimento >= hoje) {
+    return res.status(400).json({ erro: 'A data de nascimento deve ser anterior à data atual.' });
+  }
+
+  if (ingresso >= hoje) {
+    return res.status(400).json({ erro: 'A data de ingresso deve ser anterior à data atual.' });
+  }
+
+  if (foto_membro) {
+    const extensao = foto_membro.toLowerCase();
+    const formatosAceitos = ['.jpg', '.jpeg', '.png'];
+    const valido = formatosAceitos.some(ext => extensao.endsWith(ext));
+
+    if (!valido) {
+      return res.status(400).json({ erro: 'A foto deve ser JPG, JPEG ou PNG.' });
+    }
+  }
+
+  DAOmembro.atualizar(membro, (err, resultado) => {
+    if (err) {
+      return res.status(500).json({ erro: 'Erro ao atualizar membro', detalhe: err.message });
+    }
+    res.json({ mensagem: 'Membro atualizado com sucesso', resultado });
+  });
+}
+
 
   //arrumar isso aq 
   static deletar(req, res) {

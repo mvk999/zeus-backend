@@ -25,13 +25,37 @@ class OrcamentoController {
 
   static inserir(req, res) {
     const orcamento = req.body;
+  
+    const {
+      num_orcamento,
+      desc_orcamento,
+      id_cli,
+      id_membro,
+      valor_orcamento,
+      custo_orcamento,
+      status
+    } = orcamento;
+  
+    if (!num_orcamento || !desc_orcamento || !id_cli || !id_membro || !valor_orcamento || !custo_orcamento) {
+      return res.status(400).json({ erro: 'Todos os campos obrigatórios devem ser preenchidos.' });
+    }
+  
+    const statusValido = ['Em análise', 'Aprovado', 'Reprovado'];
+    if (!statusValido.includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido. Use: Em análise, Aprovado ou Reprovado.' });
+    }
+  
+    // gera a data atual
+    orcamento.data_criacao = new Date();
+  
     DAOorcamento.inserir(orcamento, (err, resultado) => {
       if (err) {
-        return res.status(500).json({ erro: 'Erro ao inserir orçamento' });
+        return res.status(500).json({ erro: 'Erro ao inserir orçamento', detalhe: err.message });
       }
-      res.status(201).json({ mensagem: 'Orçamento inserido com sucesso', resultado });
+      res.status(201).json({ mensagem: 'Orçamento criado com sucesso', resultado });
     });
   }
+  
 
   static atualizar(req, res) {
     const id = req.params.id;
