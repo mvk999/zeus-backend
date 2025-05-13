@@ -109,6 +109,29 @@ class OrcamentoController {
     });
   }
   
+  static atualizarStatus(req, res) {
+    const id = req.params.id;
+    const { status } = req.body;
+  
+    const statusValido = ['Em análise', 'Aprovado', 'Reprovado'];
+  
+    if (!statusValido.includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido. Use: Em análise, Aprovado ou Reprovado.' });
+    }
+  
+    DAOorcamento.atualizarStatus(id, status, (err, resultado) => {
+      if (err) {
+        return res.status(500).json({ erro: 'Erro ao atualizar status do orçamento' });
+      }
+      if (resultado.affectedRows === 0) {
+        return res.status(404).json({ erro: 'Orçamento não encontrado' });
+      }
+      res.status(200).json({ mensagem: 'Status atualizado com sucesso' });
+    });
+  }
+  
+
+
 
 static listarDoCliente(req, res) {
   const idCliente = req.user.id;

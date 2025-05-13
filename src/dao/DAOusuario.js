@@ -64,22 +64,24 @@ static buscarPorEmail(email, callback) {
       nome_user: u.nome_user,
       email_user: u.email_user,
       senha_user: u.senha_user,
-      tipo_user: u.tipo_user
+      tipo_user: u.tipo_user,
+      tentativas_login: u.tentativas_login,
+      bloqueado_ate: u.bloqueado_ate
     };
 
     callback(null, usuario);
   });
 }
 
-// Buscar usuário por email
-  static buscarPorEmail(email, callback) {
-  const sql = 'SELECT * FROM usuario WHERE email_user = ?';
-  db.query(sql, [email], (err, results) => {
-    if (err) return callback(err, null);
-    if (results.length === 0) return callback(null, null);
-    callback(null, results[0]);
+static atualizarTentativasEBloqueio(email, tentativas, bloqueadoAte) {
+  const sql = 'UPDATE usuario SET tentativas_login = ?, bloqueado_ate = ? WHERE email_user = ?';
+  db.query(sql, [tentativas, bloqueadoAte, email], (err) => {
+    if (err) {
+      console.error('Erro ao atualizar tentativas de login:', err);
+    }
   });
 }
+
 
 static verificarCodigoRecuperacao(email, codigo, callback) {
   const sql = `

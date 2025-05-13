@@ -180,12 +180,11 @@ class UsuarioController {
       });
     });
   }
-  
-  
-  
 
   static login(req, res) {
     const jwt = require('jsonwebtoken');
+    const bcrypt = require('bcryptjs');
+  
     const email_user = req.body.email_user;
     const senhaDigitada = req.body.senha_user;
   
@@ -193,7 +192,7 @@ class UsuarioController {
       return res.status(400).json({ erro: 'Email e senha são obrigatórios.' });
     }
   
-    DAOusuario.buscarPorEmail(email_user, (err, usuario) => {
+    DAOusuario.buscarPorEmail(email_user, async (err, usuario) => {
       if (err) {
         return res.status(500).json({ erro: 'Erro interno ao buscar usuário.' });
       }
@@ -202,37 +201,67 @@ class UsuarioController {
         return res.status(404).json({ erro: 'Usuário não encontrado.' });
       }
   
-      // Verifica a senha
-      const bcrypt = require('bcryptjs');
-      bcrypt.compare(senhaDigitada, usuario.senha_user, (err, match) => {
-        if (err) {
-          return res.status(500).json({ erro: 'Erro ao comparar senhas.' });
-        }
+      // Verifica se está bloqueado
+      const agora = new Date();
+      if (usuario.bloqueado_ate && new Date(usuario.bloqueado_ate) > agora) {
+        return res.status(403).json({
+          erro: 'Conta temporariamente bloqueada. Tente novamente mais tarde.'
+        });
+      }
   
-        if (!match) {
+      const senhaCorreta = await bcrypt.compare(senhaDigitada, usuario.senha_user);
+  
+      if (!senhaCorreta) {
+        const novasTentativas = (usuario.tentativas_login || 0) + 1;
+  
+        if (novasTentativas >= 3) {
+          const dataBloqueio = new Date();
+          dataBloqueio.setMinutes(dataBloqueio.getMinutes() + 15); // bloqueia por 15 min o usuario de tentar logar novamente
+  
+          DAOusuario.atualizarTentativasEBloqueio(email_user, novasTentativas, dataBloqueio);
+          return res.status(403).json({
+            erro: 'Conta bloqueada após 3 tentativas. Tente novamente em 15 minutos.'
+          });
+        } else {
+          DAOusuario.atualizarTentativasEBloqueio(email_user, novasTentativas, null);
           return res.status(401).json({ erro: 'Senha incorreta.' });
         }
+      }
   
-        // Geração do token após validação bem-sucedida
-        const token = jwt.sign(
-          { id: usuario.id_user, tipo: usuario.tipo_user },
-          process.env.JWT_SECRET || 'segredoSuperSeguro',
-          { expiresIn: '10h' }
-        );
+      // Login bem-sucedido: zera tentativas
+      DAOusuario.atualizarTentativasEBloqueio(email_user, 0, null);
   
-        res.status(200).json({
-          mensagem: 'Login realizado com sucesso!',
-          token: token,
-          usuario: {
-            id_user: usuario.id_user,
-            nome_user: usuario.nome_user,
-            email_user: usuario.email_user,
-            tipo_user: usuario.tipo_user
-          }
-        });
+      const token = jwt.sign(
+        { id: usuario.id_user, tipo: usuario.tipo_user },
+        process.env.JWT_SECRET || 'segredoSuperSeguro',
+        { expiresIn: '10h' }
+      );
+  
+      res.status(200).json({
+        mensagem: 'Login realizado com sucesso!',
+        token: token,
+        usuario: {
+          id_user: usuario.id_user,
+          nome_user: usuario.nome_user,
+          email_user: usuario.email_user,
+          tipo_user: usuario.tipo_user
+        }
       });
     });
   }
+  
+  static atualizarTentativasEBloqueio(email, tentativas, bloqueadoAte) {
+    console.log('>> Atualizando tentativas:', { email, tentativas, bloqueadoAte }); 
+  
+    const sql = 'UPDATE usuario SET tentativas_login = ?, bloqueado_ate = ? WHERE email_user = ?';
+    db.query(sql, [tentativas, bloqueadoAte, email], (err) => {
+      if (err) {
+        console.error('Erro ao atualizar tentativas de login:', err);
+      }
+    });
+  }
+  
+
 static esquecisenha(req, res) {
   const email = req.body.email_user;
 

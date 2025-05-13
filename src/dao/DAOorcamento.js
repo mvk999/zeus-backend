@@ -104,10 +104,18 @@ class DAOorcamento {
     db.query(sql, values, callback);
   }
 
+  static atualizarStatus(id_orcamento, status, callback) {
+    const sql = `UPDATE orcamento SET status = ? WHERE id_orcamento = ?`;
+    db.query(sql, [status, id_orcamento], callback);
+  }
+  
+
 static listarPorCliente(id_cli, callback) {
   const sql = 'SELECT * FROM orcamento WHERE id_cli = ?';
   db.query(sql, [id_cli], callback);
 }
+
+//lista apenas de orcamentos que estao como "em analise"
 
   static deletar(id, callback) {
     const sql = 'DELETE FROM orcamento WHERE id_orcamento = ?';
