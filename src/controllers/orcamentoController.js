@@ -76,14 +76,39 @@ class OrcamentoController {
   static atualizar(req, res) {
     const id = req.params.id;
     const orcamento = { ...req.body, id_orcamento: id };
-
+  
+    const {
+      num_orcamento,
+      desc_orcamento,
+      id_cli,
+      id_membro,
+      valor_orcamento,
+      custo_orcamento,
+      status
+    } = orcamento;
+  
+    if (!num_orcamento || !desc_orcamento || !id_cli || !id_membro || !valor_orcamento || !custo_orcamento || !status) {
+      return res.status(400).json({ erro: 'Todos os campos obrigatórios devem ser preenchidos.' });
+    }
+  
+    // Validar status permitido
+    const statusValido = ['Em análise', 'Aprovado', 'Reprovado'];
+    if (!statusValido.includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido. Use: Em análise, Aprovado ou Reprovado.' });
+    }
+  
+    if (!orcamento.data_criacao) {
+      orcamento.data_criacao = new Date(); 
+    }
+  
     DAOorcamento.atualizar(orcamento, (err, resultado) => {
       if (err) {
-        return res.status(500).json({ erro: 'Erro ao atualizar orçamento' });
+        return res.status(500).json({ erro: 'Erro ao atualizar orçamento', detalhe: err.message });
       }
       res.status(200).json({ mensagem: 'Orçamento atualizado com sucesso', resultado });
     });
   }
+  
 
 static listarDoCliente(req, res) {
   const idCliente = req.user.id;
