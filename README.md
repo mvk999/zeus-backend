@@ -1,37 +1,210 @@
-# Zeus/Rhaegal - API Backend
+# API-RHAEGAL
 
-## 📌 Sobre o projeto
+## Índice
 
-**Rhaegal** é uma **API Backend** em **Node.js** utilizando **Express** e **MySQL**. O projeto tem como objetivo fornecer funcionalidades para gerenciar membros, orçamentos e usuários de um sistema interno.
+* [Descrição do Projeto](#descrição)
+* [Tecnologias Utilizadas](#tecnologias-utilizadas-)
+* [Modelagem de Dados](#modelagem-de-dados)
+* [Arquitetura e Organização de Código](#arquitetura-e-organização-do-código)
+* [Instalação e Configuração](#instalação-e-configuração)
+* [Uso](#uso)
+* [Testes](#testes)
+* [Licença](#licença)
+* [Autores](#autores)
+* [Contato](#contato)
 
-Ainda está **em desenvolvimento**, e algumas funcionalidades podem estar em construção ou testes. Este README será atualizado à medida que o projeto avança.
+## Descrição
 
-## 🛠️ Tecnologias Utilizadas (Até o momento)
+Este projeto foi desenvolvido como parte do Desafio de Backend da Comp Júnior 2025.1. A API Rhaegal permite o gerenciamento de membros, orçamentos e clientes, com funcionalidades completas de autenticação JWT, envio de e-mail via Mailtrap e bloqueio automático após múltiplas tentativas de login.
 
-- **Node.js**: Ambiente de execução JavaScript no servidor
-- **Express.js**: Framework minimalista para criação de APIs
-- **MySQL**: Banco de dados relacional
+## Tecnologias Utilizadas 🚀
 
-## 🚀 Como rodar o projeto
-Antes de qualquer coisa certifique se o Node e o MySQL estão instalados,então:
+* **MySql**: Banco de dados relacional utilizado no armazenamento das entidades.
+* **NodeJS**: Ambiente de execução JavaScript no back-end.
+* **Express**: Framework minimalista para construção de APIs RESTful.
+* **bcryptjs**: Biblioteca para hashing de senhas, usada na segurança de login.
+* **jsonwebtoken (JWT)**: Para autenticação via tokens.
+* **nodemailer**: Usado para envio de e-mails com códigos de recuperação.
+
+## Modelagem de Dados
+Em construção
+
+### Entidades principais
+
+* **Usuário (**\*\*****`usuario`\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*****\*\*\*\*)\*\*user, nome\_user, email\_user, senha\_user, tipo\_user, tentativas\_login, bloqueado\_ate
+* **Membro (********`membro`****\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*)**: id\_membro, nome\_membro, email\_inst\_membro, telefone\_membro, data\_nascimento\_membro, data\_ingresso\_membro, genero\_membro, cargo\_membro, habilidades\_membro, foto\_membro
+* **Cliente (********`cliente`****\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*)**: id\_cli, nome\_cli, email\_cli, telefone\_cli, empresa\_cli
+* **Orçamento (********`orcamento`****\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*)**: id\_orcamento, num\_orcamento, descricao\_orcamento, id\_cli, id\_membro, valor, status, data\_criacao, custos\_previstos
+
+### Diagrama de Entidades
+
+```mermaid
+erDiagram
+    usuario {
+        int id_user PK
+        string nome_user
+        string email_user
+        string senha_user
+        string tipo_user
+        int tentativas_login
+        datetime bloqueado_ate
+    }
+    membro {
+        int id_membro PK
+        string nome_membro
+        string email_inst_membro
+        string telefone_membro
+        date data_nascimento_membro
+        date data_ingresso_membro
+        string genero_membro
+        string cargo_membro
+        string habilidades_membro
+        string foto_membro
+    }
+    cliente {
+        int id_cli PK
+        string nome_cli
+        string email_cli
+        string telefone_cli
+        string empresa_cli
+    }
+    orcamento {
+        int id_orcamento PK
+        string num_orcamento
+        string descricao_orcamento
+        int id_cli FK
+        int id_membro FK
+        decimal valor
+        string status
+        datetime data_criacao
+        string custos_previstos
+    }
+    cliente ||--o{ orcamento : possui
+    membro ||--o{ orcamento : elabora
+```
+
+## Arquitetura e Organização de Código
+
+A aplicação adota uma arquitetura em camadas dividida entre:
+
+* **DAO (Data Access Object)**: Manipula diretamente o banco com SQL.
+* **Controllers**: Camada lógica para tratar requisições HTTP.
+* **Middlewares**: Autenticação e autorização por tipo de usuário.
+* **Models**: Representações das entidades.
+* **Routes**: Define os endpoints.
+* **Config**: Conexão com banco e serviço de e-mail.
+
+As rotas estão organizadas por entidade dentro de `src/routes` e os controllers em `src/controllers`.
+
+## Instalação e Configuração
+
+### Pré-requisitos
+
+* Node.js v20 ou superior
+* MySQL
+* Postman ou Insomnia para testes
+
+### Passos para instalação
+
+1. Clone o repositório:
+
 ```bash
+git clone https://github.com/seu-usuario/zeus-backend.git
+```
+
+2. Instale as dependências:
+
+```bash
+cd zeus-backend
 npm install
 ```
-Crie um banco de dados no MySQL com o nome rhaegal_db (ou qualquer outro nome de sua escolha).
 
-No arquivo .env, configure as variáveis de ambiente para a conexão com o MySQL:
+3. Crie o arquivo `.env` na raiz do projeto com base nas variáveis:
+
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=suasenha
+DB_NAME=rhaegon_db
+PORT=3000
+
+MAILTRAP_HOST=smtp.mailtrap.io
+MAILTRAP_PORT=587
+MAILTRAP_USER=usuario_mailtrap
+MAILTRAP_PASS=senha_mailtrap
+JWT_SECRET=sua_chave_super_secreta
+```
+
+4. Execute o script SQL de criação das tabelas (se necessário) e certifique-se de que o banco está acessível.
+
+5. Inicie o servidor:
+
 ```bash
 node server.js
 ```
-Inicialmente isso tudo esta rodando em localhost, isso será analisado durante o desenvolvimento como continuará
 
-### 1. Clonando o repositório
+A API estará disponível em: `http://localhost:3000`
 
-Clone este repositório em seu diretório local:
+## Uso
 
-```bash
-git clone https://github.com/mvk999/zeus-backend.git
-cd zeus-backend
-```
-🚧 Status do Projeto
-O projeto está em desenvolvimento.Sempre que alguma alteração for realizada será feito um commit para documentação
+### Endpoints principais
+
+#### Usuário
+
+* `POST /usuario/cadastrar` — Criação de usuário (admin ou cliente)
+* `POST /usuario/login` — Login com JWT e controle de tentativas
+* `POST /usuario/esqueci` — Envio de código de recuperação por e-mail
+* `POST /usuario/redefinir` — Redefinir senha com código
+* `GET /usuario` — Listagem de usuários (admin)
+
+#### Membro
+
+* `POST /membro/cadastrar` — Cadastro de membro
+* `GET /membro` — Listagem de membros
+* `GET /membro?nome=...` — Filtro por nome
+* `PUT /membro/:id` — Atualização
+* `DELETE /membro/:id` — Exclusão
+
+#### Cliente
+
+* `POST /cliente/cadastrar` — Cadastro de cliente
+* `GET /cliente` — Listagem
+* `PUT /cliente/:id` — Atualização
+* `DELETE /cliente/:id` — Exclusão
+
+#### Orçamento
+
+* `POST /orcamento/cadastrar` — Criação de orçamento
+* `GET /orcamento` — Listagem com filtros (`status`, `id_cli`)
+* `PUT /orcamento/:id` — Atualização de orçamento
+* `DELETE /orcamento/:id` — Exclusão
+
+> Todas as rotas protegidas requerem autenticação via token JWT.
+
+## Testes
+
+Os testes do projeto foram realizados manualmente utilizando o Postman. Foram testados os seguintes fluxos:
+
+* Cadastro e login de usuários
+* Controle de tentativas com bloqueio após 3 falhas
+* Recuperação e redefinição de senha via e-mail
+* Cadastro, listagem, edição e exclusão de membros, clientes e orçamentos
+
+> 🚧 Testes automatizados ainda em contrução,por isso não estão nesse README
+
+## Licença:
+
+Este projeto foi desenvolvido exclusivamente para fins educacionais no contexto do Desafio de Backend da Comp Júnior 2025.1. &#x20;
+
+Não possui finalidade comercial nem está aberto para redistribuição formal.
+
+## Autores
+
+* **Marcos Vinícius Pereira – Desenvolvedor responsável pelo backend da aplicação Rhaegal.**
+
+## Contato
+
+Para mais informações ou[ dúvidas, entre em contat](https://github.com/mvk999)o:
+
+* G[itHub: ](https://github.com/mvk999)[https://github.com/mvk999](https://github.com/mvk999)
+* Lin[kedIn: ](http://www.linkedin.com/in/mvpereira2006)[www.linkedin.com/in/mvpereira2006](http://www.linkedin.com/in/mvpereira2006)
