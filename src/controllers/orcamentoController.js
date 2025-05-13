@@ -2,14 +2,30 @@ const DAOorcamento = require('../dao/DAOorcamento');
 
 class OrcamentoController {
   static listar(req, res) {
-    DAOorcamento.listarTodos((err, orcamentos) => {
-      if (err) {
-        return res.status(500).json({ erro: 'Erro ao listar orçamentos' });
-      }
-      res.status(200).json(orcamentos);
-    });
+    const { status, id_cli } = req.query;
+  
+    if (status || id_cli) {
+      DAOorcamento.buscarComFiltros(status, id_cli, (err, orcamentos) => {
+        if (err) {
+          return res.status(500).json({ erro: 'Erro ao buscar orçamentos com filtros' });
+        }
+  
+        if (!orcamentos.length) {
+          return res.status(404).json({ mensagem: 'Nenhum orçamento encontrado com os filtros fornecidos.' });
+        }
+  
+        res.status(200).json(orcamentos);
+      });
+    } else {
+      DAOorcamento.listarTodos((err, orcamentos) => {
+        if (err) {
+          return res.status(500).json({ erro: 'Erro ao listar orçamentos' });
+        }
+        res.status(200).json(orcamentos);
+      });
+    }
   }
-
+  
   static buscarPorId(req, res) {
     const id = req.params.id;
     DAOorcamento.buscarPorId(id, (err, orcamento) => {

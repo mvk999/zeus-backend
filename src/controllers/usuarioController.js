@@ -32,40 +32,157 @@ class UsuarioController {
   static inserir(req, res) {
     const usuario = req.body;
     console.log("Dados recebidos no body:", usuario);
-
+  
     // Validação básica
     if (!usuario.email_user || !usuario.senha_user) {
       return res.status(400).json({ erro: 'Email e senha são obrigatórios' });
     }
-
+  
     // Validação de e-mail
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(usuario.email_user);
     if (!emailValido) {
       return res.status(400).json({ erro: 'Email inválido' });
     }
-
+  
     // Validação de senha
     if (usuario.senha_user.length < 6) {
       return res.status(400).json({ erro: 'A senha deve ter no mínimo 6 caracteres' });
     }
-
+  
+    // 🔒 Validação extra para cliente
+    if (usuario.tipo_user?.toLowerCase() === 'cliente') {
+      if (!usuario.telefone_user || !usuario.empresa_user) {
+        return res.status(400).json({
+          erro: 'Telefone e empresa são obrigatórios para clientes.'
+        });
+      }
+    }
+  
     // Criptografar a senha
     bcrypt.hash(usuario.senha_user, 10, (err, hash) => {
       if (err) {
         return res.status(500).json({ erro: 'Erro ao criptografar a senha' });
       }
-
+  
       usuario.senha_user = hash;
-
+  
       DAOusuario.inserir(usuario, (err, resultado) => {
         if (err) {
-          console.error("Erro no DAOusuario:", err); // Mostra no terminal
+          console.error("Erro no DAOusuario:", err);
           return res.status(500).json({ erro: 'Erro ao inserir usuário', detalhe: err.message });
         }
-        res.status(201).json({ mensagem: 'Usuário inserido com sucesso', resultado });
+  
+        const id_user_inserido = resultado.insertId;
+  
+        // Se for cliente, cria também na tabela cliente
+        if (usuario.tipo_user?.toLowerCase() === 'cliente') {
+          // valida os campos obrigatorios para os clientes
+          //a primeira vez q faz login cria todo o cadastro do cliente,depois é apenas email_user e senha
+          const sqlCliente = `
+            INSERT INTO cliente (id_user, nome_cli, email_cli, telefone_cli, empresa_cli)
+            VALUES (?, ?, ?, ?, ?)
+          `;
+  
+          db.query(
+            sqlCliente,
+            [
+              id_user_inserido,
+              usuario.nome_user,
+              usuario.email_user,
+              usuario.telefone_user,
+              usuario.empresa_user
+            ],
+            (errCliente) => {
+              if (errCliente) {
+                console.error("Erro ao criar cliente vinculado:", errCliente);
+                return res.status(500).json({
+                  erro: 'Usuário criado, mas erro ao vincular cliente.',
+                  detalhe: errCliente.sqlMessage
+                });
+              }
+  
+              return res.status(201).json({
+                mensagem: 'Usuário e cliente criados com sucesso!',
+                id_user: id_user_inserido
+              });
+            }
+          );
+  
+        } else if (usuario.tipo_user?.toLowerCase() === 'admin') {
+          // valida os campos obrigatorios para os admin
+          //a primeira vez q faz login cria todo o cadastro do admin,depois é apenas email_user e senha
+          const camposObrigatorios = [
+            'nome_membro',
+            'data_nascimento_membro',
+            'email_inst_membro',
+            'cargo_membro',
+            'telefone_membro',
+            'genero_membro',
+            'foto_membro',
+            'data_ingress_membro'
+          ];
+  
+          const camposFaltando = camposObrigatorios.filter(campo => !usuario[campo]);
+          if (camposFaltando.length > 0) {
+            return res.status(400).json({
+              erro: `Campos obrigatórios ausentes para membro: ${camposFaltando.join(', ')}`
+            });
+          }
+  
+          // Validação de extensão da foto
+          const extensoesAceitas = ['.jpg', '.jpeg', '.png'];
+          const foto = usuario.foto_membro.toLowerCase();
+          const extensaoValida = extensoesAceitas.some(ext => foto.endsWith(ext));
+  
+          if (!extensaoValida) {
+            return res.status(400).json({ erro: 'A foto deve ser JPG, JPEG ou PNG.' });
+          }
+  
+          const sqlMembro = `
+            INSERT INTO membro (
+              nome_membro, data_nascimento_membro, email_inst_membro, cargo_membro,
+              telefone_membro, genero_membro, foto_membro, data_ingress_membro, id_user
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `;
+  
+          db.query(sqlMembro, [
+            usuario.nome_membro,
+            usuario.data_nascimento_membro,
+            usuario.email_inst_membro,
+            usuario.cargo_membro,
+            usuario.telefone_membro,
+            usuario.genero_membro,
+            usuario.foto_membro,
+            usuario.data_ingress_membro,
+            id_user_inserido
+          ], (errMembro) => {
+            if (errMembro) {
+              console.error("Erro ao criar membro vinculado:", errMembro);
+              return res.status(500).json({
+                erro: 'Usuário criado, mas erro ao vincular membro.',
+                detalhe: errMembro.sqlMessage
+              });
+            }
+  
+            return res.status(201).json({
+              mensagem: 'Usuário e membro criados com sucesso!',
+              id_user: id_user_inserido
+            });
+          });
+  
+        } else {
+          // Tipo diferente de cliente ou admin
+          res.status(201).json({
+            mensagem: 'Usuário criado com sucesso!',
+            id_user: id_user_inserido
+          });
+        }
       });
     });
   }
+  
+  
+  
 
   static login(req, res) {
     const jwt = require('jsonwebtoken');

@@ -31,6 +31,41 @@ class DAOorcamento {
     });
   }
 
+  static buscarComFiltros(status, id_cli, callback) {
+    let sql = 'SELECT * FROM orcamento WHERE 1=1';
+    const values = [];
+  
+    if (status) {
+      sql += ' AND status = ?';
+      values.push(status);
+    }
+  
+    if (id_cli) {
+      sql += ' AND id_cli = ?';
+      values.push(id_cli);
+    }
+  
+    db.query(sql, values, (err, results) => {
+      if (err) return callback(err, null);
+  
+      const orcamentos = results.map(o =>
+        new Orcamento(
+          o.id_orcamento,
+          o.num_orcamento,
+          o.desc_orcamento,
+          o.valor_orcamento,
+          o.custo_orcamento,
+          o.data_criacao,
+          o.status,
+          o.id_membro,
+          o.id_cli
+        )
+      );
+  
+      callback(null, orcamentos);
+    });
+  }
+  
   static buscarPorId(id, callback) {
     const sql = 'SELECT * FROM orcamento WHERE id_orcamento = ?';
     db.query(sql, [id], (err, results) => {
