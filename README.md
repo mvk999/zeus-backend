@@ -25,16 +25,15 @@ Este projeto foi desenvolvido como parte do Desafio de Backend da Comp Júnior 2
 * **bcryptjs**: Biblioteca para hashing de senhas, usada na segurança de login.
 * **jsonwebtoken (JWT)**: Para autenticação via tokens.
 * **nodemailer**: Usado para envio de e-mails com códigos de recuperação.
+* **dotenv**: Permite trabalhar com variáveis de ambiente.
 
 ## Modelagem de Dados
-Em construção
 
 ### Entidades principais
-
-* **Usuário (**\*\*****`usuario`\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*****\*\*\*\*)\*\*user, nome\_user, email\_user, senha\_user, tipo\_user, tentativas\_login, bloqueado\_ate
-* **Membro (********`membro`****\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*)**: id\_membro, nome\_membro, email\_inst\_membro, telefone\_membro, data\_nascimento\_membro, data\_ingresso\_membro, genero\_membro, cargo\_membro, habilidades\_membro, foto\_membro
-* **Cliente (********`cliente`****\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*)**: id\_cli, nome\_cli, email\_cli, telefone\_cli, empresa\_cli
-* **Orçamento (********`orcamento`****\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*)**: id\_orcamento, num\_orcamento, descricao\_orcamento, id\_cli, id\_membro, valor, status, data\_criacao, custos\_previstos
+* **Usuário** (`usuario`): id_user, nome_user, email_user, senha_user, tipo_user, tentativas_login, bloqueado_ate  
+* **Membro** (`membro`): id_membro, nome_membro, email_inst_membro, telefone_membro, data_nascimento_membro, data_ingresso_membro, genero_membro, cargo_membro, habilidades_membro, foto_membro  
+* **Cliente** (`cliente`): id_cli, nome_cli, email_cli, telefone_cli, empresa_cli  
+* **Orçamento** (`orcamento`): id_orcamento, num_orcamento, descricao_orcamento, id_cli, id_membro, valor, status, data_criacao, custos_previstos  
 
 ### Diagrama de Entidades
 
@@ -60,6 +59,7 @@ erDiagram
         string cargo_membro
         string habilidades_membro
         string foto_membro
+        int id_user FK
     }
     cliente {
         int id_cli PK
@@ -67,6 +67,7 @@ erDiagram
         string email_cli
         string telefone_cli
         string empresa_cli
+        int id_user FK
     }
     orcamento {
         int id_orcamento PK
@@ -79,6 +80,8 @@ erDiagram
         datetime data_criacao
         string custos_previstos
     }
+    usuario ||--o{ membro : possui
+    usuario ||--o{ cliente : possui
     cliente ||--o{ orcamento : possui
     membro ||--o{ orcamento : elabora
 ```
@@ -102,20 +105,20 @@ As rotas estão organizadas por entidade dentro de `src/routes` e os controllers
 
 * Node.js v20 ou superior
 * MySQL
-* Postman ou Insomnia para testes
+* Postman para testes
 
 ### Passos para instalação
 
 1. Clone o repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/zeus-backend.git
+git clone https://github.com/seu-usuario/rhaegal.git
 ```
 
 2. Instale as dependências:
 
 ```bash
-cd zeus-backend
+cd rhaegal
 npm install
 ```
 
@@ -190,7 +193,7 @@ Os testes do projeto foram realizados manualmente utilizando o Postman. Foram te
 * Recuperação e redefinição de senha via e-mail
 * Cadastro, listagem, edição e exclusão de membros, clientes e orçamentos
 
-> 🚧 Testes automatizados ainda em contrução,por isso não estão nesse README
+> 🚧 Em versões futuras, pretende-se adicionar testes automatizados utilizando Jest ou Supertest.
 
 ## Licença:
 
@@ -204,7 +207,7 @@ Não possui finalidade comercial nem está aberto para redistribuição formal.
 
 ## Contato
 
-Para mais informações ou[ dúvidas, entre em contat](https://github.com/mvk999)o:
+Para mais informações ou[ ](https://github.com/mvk999)dúvidas entre em contato:
 
-* G[itHub: ](https://github.com/mvk999)[https://github.com/mvk999](https://github.com/mvk999)
+* [: ](https://github.com/mvk999)[https://github.com/mvk999](https://github.com/mvk999)
 * Lin[kedIn: ](http://www.linkedin.com/in/mvpereira2006)[www.linkedin.com/in/mvpereira2006](http://www.linkedin.com/in/mvpereira2006)
