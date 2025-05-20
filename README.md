@@ -209,5 +209,6 @@ Não possui finalidade comercial nem está aberto para redistribuição formal.
 
 Para mais informações ou[ ](https://github.com/mvk999)dúvidas entre em contato:
 
-* [: ](https://github.com/mvk999)[https://github.com/mvk999](https://github.com/mvk999)
-* Lin[kedIn: ](http://www.linkedin.com/in/mvpereira2006)[www.linkedin.com/in/mvpereira2006](http://www.linkedin.com/in/mvpereira2006)
+## Contato  
+- GitHub: [https://github.com/mvk999](https://github.com/mvk999)  
+- LinkedIn: [https://www.linkedin.com/in/mvpereira2006](https://www.linkedin.com/in/mvpereira2006)
