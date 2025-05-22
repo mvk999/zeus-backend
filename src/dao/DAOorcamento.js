@@ -31,6 +31,41 @@ class DAOorcamento {
     });
   }
 
+  static buscarComFiltros(status, id_cli, callback) {
+    let sql = 'SELECT * FROM orcamento WHERE 1=1';
+    const values = [];
+  
+    if (status) {
+      sql += ' AND status = ?';
+      values.push(status);
+    }
+  
+    if (id_cli) {
+      sql += ' AND id_cli = ?';
+      values.push(id_cli);
+    }
+  
+    db.query(sql, values, (err, results) => {
+      if (err) return callback(err, null);
+  
+      const orcamentos = results.map(o =>
+        new Orcamento(
+          o.id_orcamento,
+          o.num_orcamento,
+          o.desc_orcamento,
+          o.valor_orcamento,
+          o.custo_orcamento,
+          o.data_criacao,
+          o.status,
+          o.id_membro,
+          o.id_cli
+        )
+      );
+  
+      callback(null, orcamentos);
+    });
+  }
+  
   static buscarPorId(id, callback) {
     const sql = 'SELECT * FROM orcamento WHERE id_orcamento = ?';
     db.query(sql, [id], (err, results) => {
@@ -68,6 +103,19 @@ class DAOorcamento {
     ];
     db.query(sql, values, callback);
   }
+
+  static atualizarStatus(id_orcamento, status, callback) {
+    const sql = `UPDATE orcamento SET status = ? WHERE id_orcamento = ?`;
+    db.query(sql, [status, id_orcamento], callback);
+  }
+  
+
+static listarPorCliente(id_cli, callback) {
+  const sql = 'SELECT * FROM orcamento WHERE id_cli = ?';
+  db.query(sql, [id_cli], callback);
+}
+
+//lista apenas de orcamentos que estao como "em analise"
 
   static deletar(id, callback) {
     const sql = 'DELETE FROM orcamento WHERE id_orcamento = ?';
