@@ -80,7 +80,8 @@ erDiagram
         decimal valor
         string status
         datetime data_criacao
-        string custos_previstos
+        string valor_orcamento
+        string custo_orcamento
     }
     usuario ||--o{ membro : possui
     usuario ||--o{ cliente : possui
