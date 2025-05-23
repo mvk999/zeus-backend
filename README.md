@@ -1,3 +1,4 @@
+
 # API-RHAEGAL
 
 ## Índice
@@ -26,6 +27,7 @@ Este projeto foi desenvolvido como parte do Desafio de Backend da Comp Júnior 2
 * **jsonwebtoken (JWT)**: Para autenticação via tokens.
 * **nodemailer**: Usado para envio de e-mails com códigos de recuperação.
 * **dotenv**: Permite trabalhar com variáveis de ambiente.
+* **Docker**: Para containerização da aplicação e banco de dados.
 
 ## Modelagem de Dados
 
@@ -97,15 +99,16 @@ A aplicação adota uma arquitetura em camadas dividida entre:
 * **Routes**: Define os endpoints.
 * **Config**: Conexão com banco e serviço de e-mail.
 
-As rotas estão organizadas por entidade dentro de `src/routes` e os controllers em `src/controllers`.
+As rotas estão organizadas por entidade dentro de `backend/src/routes` e os controllers em `backend/src/controllers`.
 
 ## Instalação e Configuração
 
 ### Pré-requisitos
 
-* Node.js v20 ou superior
-* MySQL
-* Postman para testes
+* **Node.js** v20 ou superior
+* **MySQL**
+* **Docker** e **Docker Compose**
+* **Postman** para testes
 
 ### Passos para instalação
 
@@ -113,16 +116,10 @@ As rotas estão organizadas por entidade dentro de `src/routes` e os controllers
 
 ```bash
 git clone https://github.com/seu-usuario/rhaegal.git
-```
-
-2. Instale as dependências:
-
-```bash
 cd rhaegal
-npm install
 ```
 
-3. Crie o arquivo `.env` na raiz do projeto com base nas variáveis:
+2. Crie o arquivo `.env` na raiz do projeto com base nas variáveis:
 
 ```env
 DB_HOST=localhost
@@ -138,6 +135,19 @@ MAILTRAP_PASS=senha_mailtrap
 JWT_SECRET=sua_chave_super_secreta
 ```
 
+3. **Subir o ambiente com Docker**
+
+Certifique-se de ter o **Docker** e o **Docker Compose** instalados e execute o comando para subir os containers:
+
+```bash
+docker-compose up -d --build
+```
+
+Esse comando vai:
+- Construir a imagem do **backend**.
+- Rodar o **MySQL** com o banco de dados configurado.
+- Criar e rodar o **backend Node.js**.
+
 4. Execute o script SQL de criação das tabelas (se necessário) e certifique-se de que o banco está acessível.
 
 5. Inicie o servidor:
@@ -152,36 +162,39 @@ A API estará disponível em: `http://localhost:3000`
 
 ### Endpoints principais
 
-#### Usuário
+# Rotas Disponíveis
 
-* `POST /usuario/cadastrar` — Criação de usuário (admin ou cliente)
-* `POST /usuario/login` — Login com JWT e controle de tentativas
-* `POST /usuario/esqueci` — Envio de código de recuperação por e-mail
-* `POST /usuario/redefinir` — Redefinir senha com código
-* `GET /usuario` — Listagem de usuários (admin)
+## 1. Rota de Usuário
+- **POST /api/usuario**: Cria um novo usuário (cliente ou admin)
+- **POST /api/usuario/login**: Realiza o login de um usuário
+- **GET /api/usuario**: Lista todos os usuários (Admin)
+- **GET /api/usuario/:id**: Retorna os detalhes de um usuário específico
+- **PUT /api/usuario/:id**: Atualiza as informações de um usuário
+- **DELETE /api/usuario/:id**: Exclui um usuário
 
-#### Membro
+## 2. Rota de Cliente
+- **GET /api/usuario/cliente**: Lista todos os clientes (usuários com tipo `cliente`)
+- **GET /api/usuario/cliente/:id**: Retorna os detalhes de um cliente específico
 
-* `POST /membro/cadastrar` — Cadastro de membro
-* `GET /membro` — Listagem de membros
-* `GET /membro?nome=...` — Filtro por nome
-* `PUT /membro/:id` — Atualização
-* `DELETE /membro/:id` — Exclusão
+## 3. Rota de Orçamento
+- **POST /api/orcamento**: Cria um novo orçamento
+- **GET /api/orcamento**: Lista todos os orçamentos (Admin)
+- **GET /api/orcamento/:id**: Retorna os detalhes de um orçamento específico
+- **PUT /api/orcamento/:id**: Atualiza um orçamento
+- **DELETE /api/orcamento/:id**: Exclui um orçamento
+- **GET /api/orcamento/cliente**: Lista todos os orçamentos de um cliente
 
-#### Cliente
+## 4. Rota de Membro (Admin)
+- **POST /api/membro**: Cria um novo membro (usuário com `tipo_user = admin`)
+- **GET /api/membro**: Lista todos os membros
+- **GET /api/membro/:id**: Retorna os detalhes de um membro específico
+- **PUT /api/membro/:id**: Atualiza as informações de um membro
+- **DELETE /api/membro/:id**: Exclui um membro
 
-* `POST /cliente/cadastrar` — Cadastro de cliente
-* `GET /cliente` — Listagem
-* `PUT /cliente/:id` — Atualização
-* `DELETE /cliente/:id` — Exclusão
-
-#### Orçamento
-
-* `POST /orcamento/cadastrar` — Criação de orçamento
-* `GET /orcamento` — Listagem com filtros (`status`, `id_cli`)
-* `PUT /orcamento/:id` — Atualização de orçamento
-* `DELETE /orcamento/:id` — Exclusão
-
+## 5. Rota de Recuperação de Senha
+- **POST /api/usuario/esquecisenha**: Envia um código de recuperação para o e-mail do usuário
+- **POST /api/usuario/redefinirsenha**: Redefine a senha do usuário com o código de recuperação
+- 
 > Todas as rotas protegidas requerem autenticação via token JWT.
 
 ## Testes
@@ -193,11 +206,9 @@ Os testes do projeto foram realizados manualmente utilizando o Postman. Foram te
 * Recuperação e redefinição de senha via e-mail
 * Cadastro, listagem, edição e exclusão de membros, clientes e orçamentos
 
-> 🚧 Em versões futuras, pretende-se adicionar testes automatizados utilizando Jest ou Supertest.
-
 ## Licença:
 
-Este projeto foi desenvolvido exclusivamente para fins educacionais no contexto do Desafio de Backend da Comp Júnior 2025.1. &#x20;
+Este projeto foi desenvolvido exclusivamente para fins educacionais no contexto do Desafio de Backend da Comp Júnior 2025.1. 
 
 Não possui finalidade comercial nem está aberto para redistribuição formal.
 
@@ -207,8 +218,7 @@ Não possui finalidade comercial nem está aberto para redistribuição formal.
 
 ## Contato
 
-Para mais informações ou[ ](https://github.com/mvk999)dúvidas entre em contato:
+Para mais informações ou dúvidas, entre em contato:
 
-## Contato  
-- GitHub: [https://github.com/mvk999](https://github.com/mvk999)  
+- GitHub: [https://github.com/mvk999](https://github.com/mvk999)
 - LinkedIn: [https://www.linkedin.com/in/mvpereira2006](https://www.linkedin.com/in/mvpereira2006)
